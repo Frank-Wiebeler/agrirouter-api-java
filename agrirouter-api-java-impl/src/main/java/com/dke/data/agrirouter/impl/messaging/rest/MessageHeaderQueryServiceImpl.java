@@ -1,6 +1,7 @@
 package com.dke.data.agrirouter.impl.messaging.rest;
 
 import agrirouter.feed.response.FeedResponse;
+import com.dke.data.agrirouter.api.dto.encoding.EncodeMessageResponse;
 import com.dke.data.agrirouter.api.enums.TechnicalMessageType;
 import com.dke.data.agrirouter.api.env.Environment;
 import com.dke.data.agrirouter.api.service.messaging.MessageHeaderQueryService;
@@ -26,6 +27,11 @@ public class MessageHeaderQueryServiceImpl extends EnvironmentalService
   @Override
   public String send(MessageQueryParameters parameters) {
     String applicationMessageID = this.messageQueryService.send(parameters);
+    return applicationMessageID;
+  }
+
+  public String sendEncoded(EncodeMessageResponse encodeMessageResponse) {
+    String applicationMessageID = this.messageQueryService.sendEncoded(encodeMessageResponse);
     return applicationMessageID;
   }
 

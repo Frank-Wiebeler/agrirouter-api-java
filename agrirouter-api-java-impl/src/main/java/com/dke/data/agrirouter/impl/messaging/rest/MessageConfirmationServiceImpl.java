@@ -10,6 +10,7 @@ import agrirouter.response.Response;
 import com.dke.data.agrirouter.api.dto.encoding.DecodeMessageResponse;
 import com.dke.data.agrirouter.api.dto.encoding.EncodeMessageResponse;
 import com.dke.data.agrirouter.api.dto.messaging.FetchMessageResponse;
+import com.dke.data.agrirouter.api.dto.onboard.OnboardingResponse;
 import com.dke.data.agrirouter.api.enums.TechnicalMessageType;
 import com.dke.data.agrirouter.api.env.Environment;
 import com.dke.data.agrirouter.api.exception.UnexpectedHttpStatusException;
@@ -53,7 +54,8 @@ public class MessageConfirmationServiceImpl extends EnvironmentalService
     EncodeMessageResponse encodedMessageResponse = encodeMessage(parameters);
     SendMessageParameters sendMessageParameters = new SendMessageParameters();
     sendMessageParameters.setOnboardingResponse(parameters.getOnboardingResponse());
-    sendMessageParameters.setEncodedMessages(Collections.singletonList(encodedMessageResponse.getEncodedMessage()));
+    sendMessageParameters.setEncodedMessages(
+        Collections.singletonList(encodedMessageResponse.getEncodedMessage()));
 
     MessageSenderResponse response = this.sendMessage(sendMessageParameters);
 
@@ -61,11 +63,30 @@ public class MessageConfirmationServiceImpl extends EnvironmentalService
     return encodedMessageResponse.getApplicationMessageID();
   }
 
-  private EncodeMessageResponse encodeMessage(MessageConfirmationParameters parameters) {
+  /**
+   * Sends the encoded message TODO: Would be great to have this also in the interface
+   *
+   * @param encodedMessageResponse
+   * @return
+   */
+  public String sendEncoded(EncodeMessageResponse encodedMessageResponse) {
+    SendMessageParameters sendMessageParameters = new SendMessageParameters();
+    sendMessageParameters.setOnboardingResponse(encodedMessageResponse.getOnboardingResponse());
+    sendMessageParameters.setEncodedMessages(
+        Collections.singletonList(encodedMessageResponse.getEncodedMessage()));
+
+    MessageSenderResponse response = this.sendMessage(sendMessageParameters);
+
+    this.assertResponseStatusIsValid(response.getNativeResponse(), HttpStatus.SC_OK);
+    return encodedMessageResponse.getApplicationMessageID();
+  }
+
+  public EncodeMessageResponse encodeMessage(MessageConfirmationParameters parameters) {
     MessageHeaderParameters messageHeaderParameters = new MessageHeaderParameters();
 
     final String applicationMessageID = MessageIdService.generateMessageId();
     messageHeaderParameters.setApplicationMessageId(applicationMessageID);
+    OnboardingResponse onboardingResponse = parameters.getOnboardingResponse();
 
     messageHeaderParameters.setApplicationMessageSeqNo(1);
     messageHeaderParameters.setTechnicalMessageType(TechnicalMessageType.DKE_FEED_CONFIRM);
@@ -81,8 +102,9 @@ public class MessageConfirmationServiceImpl extends EnvironmentalService
         new MessageConfirmationMessageContentFactory()
             .message(messageConfirmationMessageParameters));
 
-    String encodedMessage = this.encodeMessageService.encode(messageHeaderParameters, payloadParameters);
-    return new EncodeMessageResponse(applicationMessageID, encodedMessage);
+    String encodedMessage =
+        this.encodeMessageService.encode(messageHeaderParameters, payloadParameters);
+    return new EncodeMessageResponse(applicationMessageID, encodedMessage, onboardingResponse);
   }
 
   @Override

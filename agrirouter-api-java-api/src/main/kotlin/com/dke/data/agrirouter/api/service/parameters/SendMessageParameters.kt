@@ -17,4 +17,7 @@ open class SendMessageParameters : ParameterValidation {
     @NotNull
     lateinit var encodedMessages: List<String>
 
+    @NotNull
+    lateinit var applicationMessageID: String
+
 }

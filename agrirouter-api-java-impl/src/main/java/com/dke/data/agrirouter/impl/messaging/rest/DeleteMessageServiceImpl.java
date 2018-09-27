@@ -3,6 +3,7 @@ package com.dke.data.agrirouter.impl.messaging.rest;
 import agrirouter.feed.request.FeedRequests;
 import agrirouter.request.Request;
 import com.dke.data.agrirouter.api.dto.encoding.EncodeMessageResponse;
+import com.dke.data.agrirouter.api.dto.onboard.OnboardingResponse;
 import com.dke.data.agrirouter.api.enums.TechnicalMessageType;
 import com.dke.data.agrirouter.api.factories.impl.DeleteMessageMessageContentFactory;
 import com.dke.data.agrirouter.api.factories.impl.parameters.DeleteMessageMessageParameters;
@@ -30,12 +31,23 @@ public class DeleteMessageServiceImpl
 
   @Override
   public String send(DeleteMessageParameters parameters) {
-    parameters.validate();
 
-    EncodeMessageResponse encodedMessageResponse = encodeMessage(parameters);
+    EncodeMessageResponse encodedMessageResponse;
+    encodedMessageResponse = encodeMessage(parameters);
+    return this.sendEncoded(encodedMessageResponse);
+  }
+
+  /**
+   * Sends the encoded message TODO: Would be great to have this also in the interface
+   *
+   * @param encodedMessageResponse
+   * @return
+   */
+  public String sendEncoded(EncodeMessageResponse encodedMessageResponse) {
     SendMessageParameters sendMessageParameters = new SendMessageParameters();
-    sendMessageParameters.setOnboardingResponse(parameters.getOnboardingResponse());
-    sendMessageParameters.setEncodedMessages(Collections.singletonList(encodedMessageResponse.getEncodedMessage()));
+    sendMessageParameters.setOnboardingResponse(encodedMessageResponse.getOnboardingResponse());
+    sendMessageParameters.setEncodedMessages(
+        Collections.singletonList(encodedMessageResponse.getEncodedMessage()));
 
     MessageSenderResponse response = this.sendMessage(sendMessageParameters);
 
@@ -43,9 +55,13 @@ public class DeleteMessageServiceImpl
     return encodedMessageResponse.getApplicationMessageID();
   }
 
-  private EncodeMessageResponse encodeMessage(DeleteMessageParameters parameters) {
+  public EncodeMessageResponse encodeMessage(DeleteMessageParameters parameters) {
+
+    parameters.validate();
+
     MessageHeaderParameters messageHeaderParameters = new MessageHeaderParameters();
     final String applicationMessageID = MessageIdService.generateMessageId();
+    OnboardingResponse onboardingResponse = parameters.getOnboardingResponse();
     messageHeaderParameters.setApplicationMessageId(applicationMessageID);
 
     messageHeaderParameters.setTechnicalMessageType(TechnicalMessageType.DKE_FEED_DELETE);
@@ -64,7 +80,8 @@ public class DeleteMessageServiceImpl
     payloadParameters.setValue(
         new DeleteMessageMessageContentFactory().message(deleteMessageMessageParameters));
 
-    String encodedMessage = this.encodeMessageService.encode(messageHeaderParameters, payloadParameters);
-    return new EncodeMessageResponse(applicationMessageID, encodedMessage);
+    String encodedMessage =
+        this.encodeMessageService.encode(messageHeaderParameters, payloadParameters);
+    return new EncodeMessageResponse(applicationMessageID, encodedMessage, onboardingResponse);
   }
 }
