@@ -1,8 +1,9 @@
 package com.dke.data.agrirouter.api.enums
 
 enum class TechnicalMessageType(val key: String) {
-
+    EMPTY(""),
     DKE_CLOUD_ONBOARD_ENDPOINTS("dke:cloud_onboard_endpoints"),
+    DKE_CLOUD_OFFBOARD_ENDPOINTS("dke:cloud_offboard_endpoints"),
     DKE_CAPABILITIES("dke:capabilities"),
     DKE_SUBSCRIPTION("dke:subscription"),
     DKE_LIST_ENDPOINTS("dke:list_endpoints"),
@@ -16,6 +17,7 @@ enum class TechnicalMessageType(val key: String) {
     ISO_11783_TASKDATA_ZIP("iso:11783:-10:taskdata:zip"),
     ISO_11783_DEVICE_DESCRIPTION("iso:11783:-10:device_description:protobuf"),
     ISO_11783_TIME_LOG("iso:11783:-10:time_log:protobuf"),
+    SHP_SHAPE_ZIP("shp:shape:zip"),
     IMG_JPEG("img:jpeg"),
     IMG_PNG("img:png"),
     IMG_BMP("img:bmp"),

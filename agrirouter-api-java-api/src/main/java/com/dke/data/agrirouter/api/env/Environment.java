@@ -9,9 +9,9 @@ public interface Environment {
   String AGRIROUTER_LOGIN_URL = "/app";
 
   String MQTT_URL_TEMPLATE = "ssl://%s:%s";
-  String REGISTRATION_SERVICE_DATA_SERVICE_URL_TEMPLATE = "/application/%s/registrationcode";
-  String AUTHENTICATION_SERVICE_DATA_SERVICE_URL_TEMPLATE = "/application/%s/authorize";
-  String SECURED_ONBOARDING_AUTHENTICATION_LINK_TEMPLATE =
+  String REGISTRATION_CODE_SERVICE_DATA_SERVICE_URL_TEMPLATE = "/application/%s/registrationcode";
+  String AUTHORIZATION_SERVICE_DATA_SERVICE_URL_TEMPLATE = "/application/%s/authorize";
+  String SECURED_ONBOARDING_AUTHORIZATION_LINK_TEMPLATE =
       "/application/%s/authorize?response_type=%s&state=%s&redirect_uri=%s";
 
   /**
@@ -77,13 +77,22 @@ public interface Environment {
   }
 
   /**
+   * URL for revoking requests.
+   *
+   * @return -
+   */
+  default String getRevokeUrl() {
+    return getRegistrationServiceUrl() + getApiPrefix() + "/registration/onboard/revoke";
+  }
+
+  /**
    * Returning the URL for the ui service to generate registration / TAN codes.
    *
    * @return -
    */
   default String getRegistrationServiceDataServiceUrl(String applicationId) {
     return this.getEnvironmentBaseUrl()
-        + String.format(REGISTRATION_SERVICE_DATA_SERVICE_URL_TEMPLATE, applicationId);
+        + String.format(REGISTRATION_CODE_SERVICE_DATA_SERVICE_URL_TEMPLATE, applicationId);
   }
 
   /**
@@ -97,21 +106,21 @@ public interface Environment {
   }
 
   /**
-   * Returning the authentication URL for secured onboarding.
+   * Returning the authorization URL for secured onboarding.
    *
    * @param responseType -
    * @param state -
    * @param redirectUrl -
    * @return -
    */
-  default String getSecuredOnboardingAuthenticationUrl(
+  default String getSecuredOnboardingAuthorizationUrl(
       String applicationId,
       SecuredOnboardingResponseType responseType,
       String state,
       String redirectUrl) {
     return this.getEnvironmentBaseUrl()
         + String.format(
-            SECURED_ONBOARDING_AUTHENTICATION_LINK_TEMPLATE,
+            SECURED_ONBOARDING_AUTHORIZATION_LINK_TEMPLATE,
             applicationId,
             responseType.getKey(),
             state,

@@ -5,48 +5,42 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import agrirouter.request.payload.account.Endpoints;
 import com.dke.data.agrirouter.api.enums.TechnicalMessageType;
-import com.dke.data.agrirouter.api.factories.impl.parameters.EndpointsFilteredMessageParameters;
+import com.dke.data.agrirouter.api.service.parameters.ListEndpointsParameters;
 import com.google.protobuf.ByteString;
 import kotlin.UninitializedPropertyAccessException;
 import org.junit.jupiter.api.Test;
 
-class EndpointsFilteredMessageContentFactoryTest
-    extends AbstractMessageContentFactoryTest<EndpointsFilteredMessageContentFactory> {
+class EndpointsFilteredMessageContentFactoryTest {
 
   @Test
   void givenValidEndpointsFilteredParametersMessageShouldNotFail() {
-    EndpointsFilteredMessageParameters endpointsFilteredMessageParameters =
-        new EndpointsFilteredMessageParameters();
-    endpointsFilteredMessageParameters.direction = Endpoints.ListEndpointsQuery.Direction.SEND;
-    endpointsFilteredMessageParameters.technicalMessageType =
-        TechnicalMessageType.ISO_11783_TASKDATA_ZIP;
-    ByteString message = this.getInstanceToTest().message(endpointsFilteredMessageParameters);
+    ListEndpointsParameters listEndpointsParameters = new ListEndpointsParameters();
+    listEndpointsParameters.direction = Endpoints.ListEndpointsQuery.Direction.SEND;
+    listEndpointsParameters.technicalMessageType = TechnicalMessageType.ISO_11783_TASKDATA_ZIP;
+    ByteString message = this.getInstanceToTest().message(listEndpointsParameters);
     assertFalse(message.isEmpty());
   }
 
   @Test
   void givenEmptyEndpointsFilteredParametersMessageShouldNotFail() {
-    EndpointsFilteredMessageParameters endpointsFilteredMessageParameters =
-        new EndpointsFilteredMessageParameters();
+    ListEndpointsParameters listEndpointsParameters = new ListEndpointsParameters();
     assertThrows(
         UninitializedPropertyAccessException.class,
-        () -> this.getInstanceToTest().message(endpointsFilteredMessageParameters));
+        () -> this.getInstanceToTest().message(listEndpointsParameters));
   }
 
   @Test
   @SuppressWarnings("ConstantConditions")
   void givenEndpointsFilteredParametersWithNullValuesMessageShouldThrowException() {
-    EndpointsFilteredMessageParameters endpointsFilteredMessageParameters =
-        new EndpointsFilteredMessageParameters();
-    endpointsFilteredMessageParameters.direction = null;
-    endpointsFilteredMessageParameters.technicalMessageType = null;
+    ListEndpointsParameters listEndpointsParameters = new ListEndpointsParameters();
+    listEndpointsParameters.direction = null;
+    listEndpointsParameters.technicalMessageType = null;
     assertThrows(
         UninitializedPropertyAccessException.class,
-        () -> this.getInstanceToTest().message(endpointsFilteredMessageParameters));
+        () -> this.getInstanceToTest().message(listEndpointsParameters));
   }
 
-  @Override
-  protected EndpointsFilteredMessageContentFactory getInstanceToTest() {
-    return new EndpointsFilteredMessageContentFactory();
+  private ListEndpointsMessageContentFactory getInstanceToTest() {
+    return new ListEndpointsMessageContentFactory();
   }
 }

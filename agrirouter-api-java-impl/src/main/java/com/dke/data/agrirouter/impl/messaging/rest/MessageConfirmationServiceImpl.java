@@ -12,7 +12,6 @@ import com.dke.data.agrirouter.api.dto.encoding.EncodeMessageResponse;
 import com.dke.data.agrirouter.api.dto.messaging.FetchMessageResponse;
 import com.dke.data.agrirouter.api.enums.TechnicalMessageType;
 import com.dke.data.agrirouter.api.env.Environment;
-import com.dke.data.agrirouter.api.exception.UnexpectedHttpStatusException;
 import com.dke.data.agrirouter.api.factories.impl.MessageConfirmationMessageContentFactory;
 import com.dke.data.agrirouter.api.factories.impl.parameters.MessageConfirmationMessageParameters;
 import com.dke.data.agrirouter.api.service.messaging.FetchMessageService;
@@ -28,7 +27,6 @@ import com.dke.data.agrirouter.impl.messaging.encoding.DecodeMessageServiceImpl;
 import com.dke.data.agrirouter.impl.messaging.encoding.EncodeMessageServiceImpl;
 import com.dke.data.agrirouter.impl.validation.ResponseValidator;
 import java.util.*;
-import org.apache.http.HttpStatus;
 
 public class MessageConfirmationServiceImpl extends EnvironmentalService
     implements MessageConfirmationService, MessageSender, ResponseValidator {
@@ -53,21 +51,30 @@ public class MessageConfirmationServiceImpl extends EnvironmentalService
     EncodeMessageResponse encodedMessageResponse = encodeMessage(parameters);
     SendMessageParameters sendMessageParameters = new SendMessageParameters();
     sendMessageParameters.setOnboardingResponse(parameters.getOnboardingResponse());
-    sendMessageParameters.setEncodedMessages(Collections.singletonList(encodedMessageResponse.getEncodedMessage()));
+    sendMessageParameters.setEncodedMessages(
+        Collections.singletonList(encodedMessageResponse.getEncodedMessage()));
 
     MessageSenderResponse response = this.sendMessage(sendMessageParameters);
 
-    this.assertResponseStatusIsValid(response.getNativeResponse(), HttpStatus.SC_OK);
+    this.assertStatusCodeIsOk(response.getNativeResponse().getStatus());
     return encodedMessageResponse.getApplicationMessageID();
   }
 
   private EncodeMessageResponse encodeMessage(MessageConfirmationParameters parameters) {
     MessageHeaderParameters messageHeaderParameters = new MessageHeaderParameters();
 
-    final String applicationMessageID = MessageIdService.generateMessageId();
-    messageHeaderParameters.setApplicationMessageId(applicationMessageID);
+    final String applicationMessageID =
+        parameters.getApplicationMessageId() == null
+            ? MessageIdService.generateMessageId()
+            : parameters.getApplicationMessageId();
 
-    messageHeaderParameters.setApplicationMessageSeqNo(1);
+    messageHeaderParameters.setApplicationMessageId(Objects.requireNonNull(applicationMessageID));
+
+    final String teamsetContextId =
+        parameters.getTeamsetContextId() == null ? "" : parameters.getTeamsetContextId();
+    messageHeaderParameters.setTeamSetContextId(Objects.requireNonNull(teamsetContextId));
+
+    messageHeaderParameters.setApplicationMessageSeqNo(parameters.getSequenceNumber());
     messageHeaderParameters.setTechnicalMessageType(TechnicalMessageType.DKE_FEED_CONFIRM);
     messageHeaderParameters.setMode(Request.RequestEnvelope.Mode.DIRECT);
 
@@ -81,13 +88,25 @@ public class MessageConfirmationServiceImpl extends EnvironmentalService
         new MessageConfirmationMessageContentFactory()
             .message(messageConfirmationMessageParameters));
 
-    String encodedMessage = this.encodeMessageService.encode(messageHeaderParameters, payloadParameters);
+    String encodedMessage =
+        this.encodeMessageService.encode(messageHeaderParameters, payloadParameters);
     return new EncodeMessageResponse(applicationMessageID, encodedMessage);
+  }
+
+  @Override
+  public void confirmAllPendingMessagesWithValidation(
+      MessageConfirmationForAllPendingMessagesParameters parameters) {
+    this.confirmAllPendingMessages(parameters, true);
   }
 
   @Override
   public void confirmAllPendingMessages(
       MessageConfirmationForAllPendingMessagesParameters parameters) {
+    this.confirmAllPendingMessages(parameters, false);
+  }
+
+  private void confirmAllPendingMessages(
+      MessageConfirmationForAllPendingMessagesParameters parameters, boolean enableValidation) {
     MessageQueryParameters messageQueryParameters = new MessageQueryParameters();
     messageQueryParameters.setOnboardingResponse(parameters.getOnboardingResponse());
     messageQueryParameters.setMessageIds(Collections.emptyList());
@@ -107,8 +126,8 @@ public class MessageConfirmationServiceImpl extends EnvironmentalService
               fetchMessageResponses.get().get(0).getCommand().getMessage());
       if (decodedMessageQueryResponse.getResponseEnvelope().getType()
               == Response.ResponseEnvelope.ResponseBodyType.ACK_FOR_FEED_MESSAGE
-          && decodedMessageQueryResponse.getResponseEnvelope().getResponseCode()
-              == HttpStatus.SC_OK) {
+          && this.assertStatusCodeIsValid(
+              decodedMessageQueryResponse.getResponseEnvelope().getResponseCode())) {
         FeedResponse.MessageQueryResponse messageQueryResponse =
             this.messageQueryService.decode(
                 decodedMessageQueryResponse.getResponsePayloadWrapper().getDetails().getValue());
@@ -118,27 +137,28 @@ public class MessageConfirmationServiceImpl extends EnvironmentalService
             .forEach(feedMessage -> messageIds.add(feedMessage.getHeader().getMessageId()));
         MessageConfirmationParameters messageConfirmationParameters =
             new MessageConfirmationParameters();
-        messageConfirmationParameters.setApplicationId(parameters.getApplicationId());
-        messageConfirmationParameters.setCertificationVersionId(
-            parameters.getCertificationVersionId());
         messageConfirmationParameters.setOnboardingResponse(parameters.getOnboardingResponse());
         messageConfirmationParameters.setMessageIds(messageIds);
         this.send(messageConfirmationParameters);
-        fetchMessageResponses =
-            this.fetchMessageService.fetch(
-                parameters.getOnboardingResponse(), MAX_TRIES_BEFORE_FAILURE, DEFAULT_INTERVAL);
-        if (fetchMessageResponses.isPresent()) {
-          decodedMessageQueryResponse =
-              this.decodeMessageService.decode(
-                  fetchMessageResponses.get().get(0).getCommand().getMessage());
-          if (decodedMessageQueryResponse.getResponseEnvelope().getResponseCode()
-              != HttpStatus.SC_CREATED) {
-            throw new UnexpectedHttpStatusException(
-                decodedMessageQueryResponse.getResponseEnvelope().getResponseCode(),
-                HttpStatus.SC_CREATED);
-          }
+        if (enableValidation) {
+          this.validateReponse(parameters);
         }
       }
+    }
+  }
+
+  private void validateReponse(MessageConfirmationForAllPendingMessagesParameters parameters) {
+    Optional<List<FetchMessageResponse>> fetchMessageResponses;
+    DecodeMessageResponse decodedMessageQueryResponse;
+    fetchMessageResponses =
+        this.fetchMessageService.fetch(
+            parameters.getOnboardingResponse(), MAX_TRIES_BEFORE_FAILURE, DEFAULT_INTERVAL);
+    if (fetchMessageResponses.isPresent()) {
+      decodedMessageQueryResponse =
+          this.decodeMessageService.decode(
+              fetchMessageResponses.get().get(0).getCommand().getMessage());
+      this.assertStatusCodeIsValid(
+          decodedMessageQueryResponse.getResponseEnvelope().getResponseCode());
     }
   }
 }

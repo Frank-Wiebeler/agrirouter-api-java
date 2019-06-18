@@ -9,6 +9,9 @@
 == Abstract
 image::agrirouter.svg[agrirouter]
 
+**IMPORTANT**
+This is no official branch but just a test branch to work with my GitLab CI. For development with agrirouter API, rever to https://github.com/DKE-Data
+
 The agrirouter is a universal data exchange platform for farmers and agricultural contractors that makes it possible to connect machinery and agricultural software, regardless of vendor or manufacturer. Agrirouter does not save data; it transfers data.
 As a universal data exchange platform, agrirouter fills a gap on the way to Farming 4.0. Its underlying concept unites cross-vendor and discrimination-free data transfer. You retain full control over your data. Even data exchange with service providers (e.g. agricultural contractors) and other partners is uncomplicated: Data are very rapidly transferred via the online connection, and if you wish, is intelligently connected to other datasets.
 
@@ -57,13 +60,13 @@ After adding the snapshot repository feel free to add the Maven dependencies:
 
 ```xml
 <dependency>
-    <groupId>om.agrirouter.api.lmis</groupId>
+    <groupId>com.agrirouter.api.lmis</groupId>
     <artifactId>agrirouter-api-java-api</artifactId>
     <version>${agrirouter-api-java-api.version}</version>
     <classifier>jdk10</classifier>
 </dependency>
 <dependency>
-    <groupId>om.agrirouter.api.lmis</groupId>
+    <groupId>com.agrirouter.api.lmis</groupId>
     <artifactId>agrirouter-api-java-impl</artifactId>
     <version>${agrirouter-api-java-api.version}</version>
     <classifier>jdk10</classifier>
@@ -78,13 +81,13 @@ After adding the snapshot repository feel free to add the following Maven depend
 
 ```xml
 <dependency>
-    <groupId>om.agrirouter.api.lmis</groupId>
+    <groupId>com.agrirouter.api.lmis</groupId>
     <artifactId>agrirouter-api-java-api</artifactId>
     <version>${agrirouter-api-java-api.version}</version>
     <classifier>jdk8</classifier>
 </dependency>
 <dependency>
-    <groupId>om.agrirouter.api.lmis</groupId>
+    <groupId>com.agrirouter.api.lmis</groupId>
     <artifactId>agrirouter-api-java-impl</artifactId>
     <version>${agrirouter-api-java-api.version}</version>
     <classifier>jdk8</classifier>
@@ -96,13 +99,13 @@ After adding the snapshot repository feel free to add the following Maven depend
 
 ```xml
 <dependency>
-    <groupId>om.agrirouter.api.lmis</groupId>
+    <groupId>com.agrirouter.api.lmis</groupId>
     <artifactId>agrirouter-api-java-api</artifactId>
     <version>${agrirouter-api-java-api.version}</version>
     <classifier>jdk9</classifier>
 </dependency>
 <dependency>
-    <groupId>om.agrirouter.api.lmis</groupId>
+    <groupId>com.agrirouter.api.lmis</groupId>
     <artifactId>agrirouter-api-java-impl</artifactId>
     <version>${agrirouter-api-java-api.version}</version>
     <classifier>jdk9</classifier>
@@ -114,13 +117,13 @@ After adding the snapshot repository feel free to add the following Maven depend
 
 ```xml
 <dependency>
-    <groupId>om.agrirouter.api.lmis</groupId>
+    <groupId>com.agrirouter.api.lmis</groupId>
     <artifactId>agrirouter-api-java-api</artifactId>
     <version>${agrirouter-api-java-api.version}</version>
     <classifier>jdk10</classifier>
 </dependency>
 <dependency>
-    <groupId>om.agrirouter.api.lmis</groupId>
+    <groupId>com.agrirouter.api.lmis</groupId>
     <artifactId>agrirouter-api-java-impl</artifactId>
     <version>${agrirouter-api-java-api.version}</version>
     <classifier>jdk10</classifier>
