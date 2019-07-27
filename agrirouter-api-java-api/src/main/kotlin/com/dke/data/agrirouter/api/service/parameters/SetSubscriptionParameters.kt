@@ -16,17 +16,15 @@ class SetSubscriptionParameters : AbstractParameterBase(), ParameterValidation {
     @NotNull
     lateinit var onboardingResponse: OnboardingResponse
 
-
     class Subscription : ParameterValidation {
         @NotNull
         lateinit var technicalMessageType: TechnicalMessageType
 
-
-        var ddis: List<Int> = ArrayList();
+        var ddis: List<Int> = ArrayList()
 
         var position: Boolean = false
     }
 
-    var subscriptionParameters: List<Subscription> = ArrayList()
+    var subscriptions: List<Subscription> = ArrayList()
 
 }

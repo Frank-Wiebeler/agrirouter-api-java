@@ -3,6 +3,7 @@ package com.dke.data.agrirouter.api.factories.impl
 import agrirouter.request.payload.endpoint.SubscriptionOuterClass
 import com.dke.data.agrirouter.api.factories.impl.parameters.SubscriptionMessageParameters
 import com.google.protobuf.ByteString
+import java.util.*
 
 /**
  * Implementation of a message content factory.
@@ -13,11 +14,11 @@ class SubscriptionMessageContentFactory {
         parameters.validate()
         val messageContent = SubscriptionOuterClass.Subscription.newBuilder()
 
-        for ( entry in parameters.list){
+        parameters.list.forEach{ parameter ->
             val technicalMessageType = SubscriptionOuterClass.Subscription.MessageTypeSubscriptionItem.newBuilder()
-            technicalMessageType.setTechnicalMessageType(entry.technicalMessageType.key)
-            technicalMessageType.addAllDdis(entry.ddis)
-            technicalMessageType.position = entry.position
+            technicalMessageType.setTechnicalMessageType(parameter.technicalMessageType.key)
+            technicalMessageType.addAllDdis(parameter.ddis)
+            technicalMessageType.position = parameter.position
             messageContent.addTechnicalMessageTypes(technicalMessageType)
         }
         return messageContent.build().toByteString()
