@@ -2,6 +2,7 @@ package com.dke.data.agrirouter.impl.messaging.mqtt;
 
 import com.dke.data.agrirouter.api.dto.encoding.EncodedMessage;
 import com.dke.data.agrirouter.api.exception.CouldNotSendMqttMessageException;
+import com.dke.data.agrirouter.api.service.LoggingEnabledService;
 import com.dke.data.agrirouter.api.service.messaging.SetCapabilityService;
 import com.dke.data.agrirouter.api.service.messaging.encoding.EncodeMessageService;
 import com.dke.data.agrirouter.api.service.parameters.SendMessageParameters;
@@ -17,7 +18,11 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class SetCapabilityServiceImpl extends MqttService
-    implements SetCapabilityService, MessageSender, MessageEncoder, ResponseValidator {
+    implements SetCapabilityService,
+        MessageSender,
+        MessageEncoder,
+        ResponseValidator,
+        LoggingEnabledService {
 
   private final EncodeMessageService encodeMessageService;
 
@@ -36,6 +41,7 @@ public class SetCapabilityServiceImpl extends MqttService
       sendMessageParameters.setEncodedMessages(
           Collections.singletonList(encodedMessage.getEncodedMessage()));
       String messageAsJson = this.createMessageBody(sendMessageParameters);
+      this.getNativeLogger().info("SetCapabilitiesServiceMessage: " + messageAsJson);
       byte[] payload = messageAsJson.getBytes();
       this.getMqttClient()
           .publish(

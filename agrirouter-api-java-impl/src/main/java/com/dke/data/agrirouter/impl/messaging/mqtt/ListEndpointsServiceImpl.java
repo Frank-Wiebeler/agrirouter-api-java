@@ -5,6 +5,7 @@ import com.dke.data.agrirouter.api.dto.encoding.EncodedMessage;
 import com.dke.data.agrirouter.api.dto.onboard.OnboardingResponse;
 import com.dke.data.agrirouter.api.enums.TechnicalMessageType;
 import com.dke.data.agrirouter.api.exception.CouldNotSendMqttMessageException;
+import com.dke.data.agrirouter.api.service.LoggingEnabledService;
 import com.dke.data.agrirouter.api.service.messaging.ListEndpointsService;
 import com.dke.data.agrirouter.api.service.messaging.encoding.EncodeMessageService;
 import com.dke.data.agrirouter.api.service.parameters.ListEndpointsParameters;
@@ -19,7 +20,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class ListEndpointsServiceImpl extends MqttService
-    implements ListEndpointsService, MessageBodyCreator, MessageEncoder {
+    implements ListEndpointsService, MessageBodyCreator, MessageEncoder, LoggingEnabledService {
 
   private EncodeMessageService encodeMessageService;
 
@@ -38,6 +39,7 @@ public class ListEndpointsServiceImpl extends MqttService
       sendMessageParameters.setEncodedMessages(
           Collections.singletonList(encodedMessage.getEncodedMessage()));
       String messageAsJson = this.createMessageBody(sendMessageParameters);
+      this.getNativeLogger().info("ListEndpointsServiceMessage: " + messageAsJson);
       byte[] payload = messageAsJson.getBytes();
       this.getMqttClient()
           .publish(

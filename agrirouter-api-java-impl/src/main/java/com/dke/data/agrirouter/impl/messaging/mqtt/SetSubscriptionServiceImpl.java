@@ -2,6 +2,7 @@ package com.dke.data.agrirouter.impl.messaging.mqtt;
 
 import com.dke.data.agrirouter.api.dto.encoding.EncodedMessage;
 import com.dke.data.agrirouter.api.exception.CouldNotSendMqttMessageException;
+import com.dke.data.agrirouter.api.service.LoggingEnabledService;
 import com.dke.data.agrirouter.api.service.messaging.SetSubscriptionService;
 import com.dke.data.agrirouter.api.service.messaging.encoding.EncodeMessageService;
 import com.dke.data.agrirouter.api.service.parameters.SendMessageParameters;
@@ -17,7 +18,11 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class SetSubscriptionServiceImpl extends MqttService
-    implements SetSubscriptionService, MessageSender, MessageEncoder, ResponseValidator {
+    implements SetSubscriptionService,
+        MessageSender,
+        MessageEncoder,
+        ResponseValidator,
+        LoggingEnabledService {
   private final EncodeMessageService encodeMessageService;
 
   public SetSubscriptionServiceImpl(IMqttClient mqttClient) {
@@ -35,6 +40,7 @@ public class SetSubscriptionServiceImpl extends MqttService
       sendMessageParameters.setEncodedMessages(
           Collections.singletonList(encodedMessage.getEncodedMessage()));
       String messageAsJson = this.createMessageBody(sendMessageParameters);
+      this.getNativeLogger().info("SetSubscriptionServiceMessage: " + messageAsJson);
       byte[] payload = messageAsJson.getBytes();
       this.getMqttClient()
           .publish(

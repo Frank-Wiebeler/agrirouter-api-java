@@ -3,6 +3,7 @@ package com.dke.data.agrirouter.impl.messaging.helper.mqtt;
 import com.dke.data.agrirouter.api.dto.encoding.EncodedMessage;
 import com.dke.data.agrirouter.api.enums.TechnicalMessageType;
 import com.dke.data.agrirouter.api.exception.CouldNotSendMqttMessageException;
+import com.dke.data.agrirouter.api.service.LoggingEnabledService;
 import com.dke.data.agrirouter.api.service.messaging.encoding.EncodeMessageService;
 import com.dke.data.agrirouter.api.service.parameters.MessageQueryParameters;
 import com.dke.data.agrirouter.api.service.parameters.SendMessageParameters;
@@ -15,7 +16,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class MessageQueryHelperService extends MqttService
-    implements MessageSender, MessageEncoder {
+    implements MessageSender, MessageEncoder, LoggingEnabledService {
 
   private final EncodeMessageService encodeMessageService;
   private final TechnicalMessageType technicalMessageType;
@@ -48,6 +49,7 @@ public class MessageQueryHelperService extends MqttService
 
       this.getNativeLogger().trace("Send and fetch message response.");
       String messageAsJson = this.createMessageBody(sendMessageParameters);
+      this.getNativeLogger().info("MessageQueryServiceMessage: " + messageAsJson);
       byte[] payload = messageAsJson.getBytes();
       this.getMqttClient()
           .publish(
