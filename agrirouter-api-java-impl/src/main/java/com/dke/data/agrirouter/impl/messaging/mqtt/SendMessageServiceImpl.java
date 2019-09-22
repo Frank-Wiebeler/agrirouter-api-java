@@ -24,7 +24,18 @@ public class SendMessageServiceImpl extends MqttService
     parameters.validate();
     try {
       String messageAsJson = this.createMessageBody(parameters);
-
+      /*try {
+        Files.write(
+            Paths.get(
+                "C:/arapp/export/"
+                    + parameters.getApplicationMessageId()
+                    + "_"
+                    + parameters.getSequenceNumber()
+                    + ".json"),
+            messageAsJson.getBytes());
+      } catch (IOException e) {
+        e.printStackTrace();
+      }*/
       byte[] payload = messageAsJson.getBytes();
       this.getMqttClient()
           .publish(
